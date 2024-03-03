@@ -1,4 +1,4 @@
-document.addEventListener("DOMContentLoaded", function () {
+document.addEventListener("DOMContentLoaded", () => {
   const refreshBtn = document.getElementById("refreshBtn");
   const sortByNameBtn = document.getElementById("sortByNameBtn");
   const sortByEmailBtn = document.getElementById("sortByEmailBtn");
@@ -6,19 +6,29 @@ document.addEventListener("DOMContentLoaded", function () {
   const userList = document.getElementById("userList");
   const errorMessage = document.getElementById("errorMessage");
 
-  refreshBtn.addEventListener("click", fetchUsers);
-  sortByNameBtn.addEventListener("click", () => sortUsers("name"));
-  sortByEmailBtn.addEventListener("click", () => sortUsers("email"));
-  filterInput.addEventListener("input", filterUsers);
+  refreshBtn.addEventListener("click", () => {
+    toggleButtonColor(refreshBtn);
+    fetchUsers();
+  });
+  sortByNameBtn.addEventListener("click", () => {
+    toggleButtonColor(sortByNameBtn);
+    sortUsers("name");
+  });
+  sortByEmailBtn.addEventListener("click", () => {
+    toggleButtonColor(sortByEmailBtn);
+    sortUsers("email");
+  });
 
   let usersData = [];
+
+  function toggleButtonColor(button) {
+    button.classList.toggle("clicked");
+  }
 
   function fetchUsers() {
     fetch("https://jsonplaceholder.typicode.com/users")
       .then((response) => {
-        if (!response.ok) {
-          throw new Error("Network response was not ok");
-        }
+        if (!response.ok) throw new Error("Network response was not ok");
         return response.json();
       })
       .then((data) => {
@@ -38,31 +48,27 @@ document.addEventListener("DOMContentLoaded", function () {
     userList.innerHTML = "";
     users.forEach((user) => {
       const userCard = document.createElement("div");
-      userCard.classList.add("user-card");
+      userCard.className = "user-card";
       userCard.innerHTML = `<h3>${user.name}</h3><p>Email: ${user.email}</p><p>Phone: ${user.phone}</p>`;
       userList.appendChild(userCard);
     });
   }
 
   function sortUsers(key) {
-    usersData.sort((a, b) => {
-      if (a[key] < b[key]) return -1;
-      if (a[key] > b[key]) return 1;
-      return 0;
-    });
+    usersData.sort((a, b) => a[key].localeCompare(b[key]));
     displayUsers(usersData);
   }
 
   function filterUsers() {
     const searchTerm = filterInput.value.toLowerCase();
-    const filteredUsers = usersData.filter((user) => {
-      return (
+    const filteredUsers = usersData.filter(
+      (user) =>
         user.name.toLowerCase().includes(searchTerm) ||
         user.email.toLowerCase().includes(searchTerm)
-      );
-    });
+    );
     displayUsers(filteredUsers);
   }
 
+  filterInput.addEventListener("input", filterUsers);
   fetchUsers();
 });
